@@ -34,6 +34,7 @@ giving you complete control of your tests execution. Any Test Feed will contain 
 These attributes are set across all tests running on a common test feed.
 
    <pre>
+        <b>Native App</b>: Sets the context for your test to run on a native app or mobile web
         <b>Belongs To</b>: Assigns the test to a particular application.
         <b>Runs On</b>: Assigns the test to user specific device. You can choose to run your tests either on device or emulator.
         <b>Application Directory</b>: Specifies the folder name where the application under test is placed.
@@ -41,7 +42,7 @@ These attributes are set across all tests running on a common test feed.
 
 #####Example
 
-![](docs/CommonAttibutes.png)
+![](docs/CommonAttributes.png)
 
 
 
@@ -107,8 +108,7 @@ structured in the lines of Cucumber with below structure
 optimustemplate/
 +-- build.gradle
 +-- app //Store Application Under Test for Android or Ios platforms.
-    +--AUT.apk
-    +--AUT.app
+    +-- hellooptimus.apk
 +-- src/test
     +-- java
     ¦   +-- pages 
@@ -146,4 +146,100 @@ thus the philosophy of Optimus
 
 #### Building Test Feed
 If there is anything at your disposal to tame the mighty Optimus,
-then its your [TestFeed](#testFeed). 
+then its your [TestFeed](#testFeed). Let us build a simple test feed similar to
+the one you will find the your project `singleApp.json`
+
+Under `resources` folder create a new json file called `helloOptimus.json`. You can copy below content in your newly created test feed.
+
+```json
+{
+  "executionDetails": {
+    "appium_js_path": "/usr/local/bin/appium",
+    "appium_node_path": "/usr/local/bin/node"
+  },
+  "testFeed":[
+    {
+      "belongsTo":"optimus",
+      "runsOn": "emulator",
+      "appDir": "app",
+      "nativeApp":true,
+      "optimusDesiredCapabilities": {
+        "appiumServerCapabilities": {
+          "app": "hellooptimus.apk",
+          "platformName": "Android"
+        },
+        "androidOnlyCapabilities": {
+          "appActivity": "com.testvagrant.hellooptimus.MainActivity",
+          "appPackage": "com.testvagrant.hellooptimus",
+          "avdLaunchTimeout": 300000,
+          "useKeystore": false
+        }
+      }
+    }
+  ]
+}
+```
+
+You would generally read this test feed as 
+<pre>
+Create a driver which <b>belongsTo</b> <b>optimus</b> for an app <b>hellooptimus</b> running on
+<b>emulator</b> on <b>Android</b> platform.
+</pre>
+
+You can create number of variations to this test feed matching your functionality.
+
+### Feature file
+Under package `features` create a new feature `HelloOptimus.feature`.
+
+``` gherkin
+Feature: Say Hello to Optimus
+
+  @helloOptimus
+  Scenario: Hello Optimus
+    Given I have optimus hello application
+    When I open it on either emulator, simulator or device on any platform
+    Then I should be able to say a hello to optimus
+```
+
+Go ahead and create a step definition file for above feature under `steps` package.
+
+``` java 
+public class HelloOptimusSteps extends BaseSteps{
+    @Given("^I have optimus hello application$")
+    public void iHaveOptimusHelloApplication() throws Throwable {
+        getDriverInstanceFor("optimus");
+    }
+
+    @When("^I open it on either emulator, simulator or device on any platform$")
+    public void iOpenItOnEitherEmulatorSimulatorOrDeviceOnAnyPlatform() throws Throwable {
+
+    }
+
+    @Then("^I should be able to say a hello to optimus$")
+    public void iShouldBeAbleToSayAHelloToOptimus() throws Throwable {
+
+    }
+}
+```
+To access the webDriver for your application, all you would need is `getDriverInstanceFor(<belongsTo>)`. This is a powerful approach when you do interApp testing.
+
+Now you are all set to run your first test. Lets get a bit geeky here.
+Bootup your favourite emulator.
+Open your terminal and navigate to your project folder
+and try below command.
+
+```bash
+gradle runFragmentation -DtestFeed="helloOptimus" -Dtags=@helloOptimus
+```
+ or
+ 
+```bash
+gradle runInParallel -DtestFeed="helloOptimus" -Dtags=@helloOptimus
+```
+ 
+After all the initial setup process you will be able to see `optimushello` app appear on your emulator screen
+
+![](docs/HelloOptimus.png)
+
+Kudos for your first successful test with Optimus. Have a great time.
+For any additional queries reach out to us at info@testvagrant.com
